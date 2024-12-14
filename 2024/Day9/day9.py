@@ -1,3 +1,13 @@
+# THIS CODE DOESN'T WORK YET, AT THIS MOMENT THE SUM DOESN'T GET COMPUTATED RIGHT
+
+
+
+
+
+
+
+
+
 def part1() :
     path = r".\Day9\day9exampleNew.txt"
     with open(path, "r") as file :
