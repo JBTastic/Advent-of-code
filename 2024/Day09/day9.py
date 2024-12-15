@@ -9,7 +9,7 @@
 
 
 def part1() :
-    path = r".\Day09\day9exampleNew.txt"
+    path = r".\Day09\day9input.txt"
     with open(path, "r") as file :
         matrix = [list(line) for line in file.read().strip().split()]
         matrix = matrix[0]
@@ -36,72 +36,78 @@ def part1() :
     file = True
     for char in matrix :
         if file == True :
-            rearranged.append(str(index) * int(char))
+            rearranged.append([str(index), int(char)])
             file = False
         else :
-            rearranged.append("." * int(char))
+            rearranged.append([".", int(char)])
             index += 1
             file = True
 
     for i, char in enumerate(rearranged) :
-        if char == "" :
+        if char[1] == 0 :
             del(rearranged[i])
-
-    # make the seperate entrys in the list one big entry
-    movedFileBlocks = list("".join(rearranged))
-
-    print("".join(movedFileBlocks))
 
 
     # go through the list backwards and search for the first number, then go through the list forwards and search for the first ".", put the number in its spot.
-    indexI = len(movedFileBlocks) - 1
+    indexI = len(rearranged) - 1
     indexJ = 0
     finished = False
 
     while finished == False :
+
+
         if indexJ >= indexI :
             finished = True
-        elif movedFileBlocks[indexI] == "." :
+
+        elif rearranged[indexI][0] == "." :
             indexI -= 1
         else :
-            if movedFileBlocks[indexJ] != "." :
+            if rearranged[indexJ][0] != "." :
                 indexJ += 1
             else :
-                movedFileBlocks[indexJ] = movedFileBlocks[indexI]
-                movedFileBlocks[indexI] = "."
-                indexI -= 1
-                indexJ += 1
-        # print(indexI)
+                # three cases:
+                # we have exactly as many numbers in the end as we got . at the front
+                # we have less numbers at the end than we got . at the front
+                # we have more numbers at the end than we got . at the front
+
+                # first case
+                if rearranged[indexI][1] == rearranged[indexJ][1] :
+                    rearranged[indexJ][0] = rearranged[indexI][0]
+                    rearranged[indexI][0] = "."
+
+                    indexI -= 1
+                    indexJ += 1
+
+                # second case
+                elif rearranged[indexI][1] < rearranged[indexJ][1] :
+                    difference = rearranged[indexJ][1] - rearranged[indexI][1]
+                    rearranged[indexJ][1] = difference
+                    rearranged.insert(indexJ, [rearranged[indexI][0], rearranged[indexI][1]])
+                    rearranged[indexI+1][0] = "."
+
+                    indexJ += 1
+
+                # third case
+                else :
+                    difference = rearranged[indexI][1] - rearranged[indexJ][1]
+                    rearranged[indexJ][0] = rearranged[indexI][0]
+                    rearranged[indexI][1] = difference
+
+                    indexJ += 1
 
 
-    print("".join(movedFileBlocks))
 
     # multiply each number with its index, sum up the results
     sum = 0
-    for i, char in enumerate(movedFileBlocks) :
-        if char != "." :
-            sum += i*int(char)
-        else :
-            break
+    sumIndex = 0
+
+    for i, entry in enumerate(rearranged) :
+        if entry[0] != "." : 
+            for j in range(entry[1]) :
+                sum += int(entry[0]) * sumIndex
+                sumIndex += 1
 
     print(f"The resulting filesystem checksum is {sum}")
 
 part1()
 # part2()
-
-def checksumTest() :
-    path = r"day9myCompactFile.txt"
-    with open(path, "r") as file :
-        matrix = [list(line) for line in file.read().strip().split()]
-        matrix = matrix[0]
-    
-    sum = 0
-    for i, char in enumerate(matrix) :
-        if char != "." :
-            sum += i*int(char)
-        else :
-            break
-
-    print(f"The resulting filesystem checksum is {sum}")
-
-# checksumTest()
