@@ -9,7 +9,7 @@
 
 
 def part1() :
-    path = r".\Day9\day9exampleNew.txt"
+    path = r".\Day09\day9exampleNew.txt"
     with open(path, "r") as file :
         matrix = [list(line) for line in file.read().strip().split()]
         matrix = matrix[0]
