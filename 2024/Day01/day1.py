@@ -1,4 +1,4 @@
-listinput = open("day1lists.txt", "r")
+listinput = open("day1input.txt", "r")
 lists = listinput.read()
 parts = lists.split()
 
