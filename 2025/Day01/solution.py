@@ -21,12 +21,12 @@ def part_1():
             if dial == 0:
                 counter += 1
                 
-        print(f"Final counter: {counter}")
+        print(f"Final counter part 1: {counter}")
         
         
         
 def part_2():
-    with open("1.2_example.txt", "r") as input:
+    with open("1.2_input.txt", "r") as input:
         dial = 50 # current dial number
         counter = 0 # number of times dial hits zero
         lines = input.readlines()
@@ -55,12 +55,12 @@ def part_2():
                 if dial == 0:
                     counter += 1 # exactly hit zero, so add one more
                 
-            print(f"Direction: {direction}, Number: {number}")
-            print(f"Dial: {dial}")
-            print(f"Counter: {counter}")
-            print("-----")
+            # print(f"Direction: {direction}, Number: {number}")
+            # print(f"Dial: {dial}")
+            # print(f"Counter: {counter}")
+            # print("-----")
                 
-        print(f"Final counter: {counter}")
+        print(f"Final counter part 2: {counter}")
         
         
         
