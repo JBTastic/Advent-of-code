@@ -7,30 +7,21 @@ def find_invalid_ids_1(start: int, end: int) -> list[int]:
         num_digits = len(num)
         is_valid = True
         
-        # go through the number of digits for every number in our range
-        for i in range(num_digits//2):
-            
-            # if the number of digits is odd, skip the number
-            if (num_digits % 2) != 0:
-                continue
-            
-            # number of digits is even, i is an integer
-            digits1 = num[0:i+1]
-            digits2 = num[i+1:num_digits]
-            
-            # number of digits must be the same
-            if len(str(digits1)) != len(str(digits2)):
-                continue
-            
-            # we now know: 
-            # both halves have the same number of digits
-            if (digits1 == digits2):
-                is_valid = False
-                break
-            else:
-                is_valid = True
-                break
-            
+        # check if number has two identical halves
+        if num_digits % 2 != 0:
+            continue
+        
+        # split number in two halves
+        num_half = num_digits // 2
+        digits1 = num[0:num_half]
+        digits2 = num[num_half:num_digits]
+        
+        # check if both halves are identical
+        if digits1 == digits2:
+            is_valid = False
+        else:
+            is_valid = True
+                        
         if not is_valid:
             invalid_ids.append(int(num))
     
@@ -55,7 +46,7 @@ def part_1():
             # print(f"Invalid IDs: {invalid_ids}")
         print(f"Sum of invalid IDs: {sum(invalid_ids)}")
 
-        
+
         
 if __name__ == "__main__":
     part_1()
