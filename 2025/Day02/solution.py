@@ -28,7 +28,7 @@ def find_invalid_ids_1(start: int, end: int) -> list[int]:
     return invalid_ids
 
 # find invalid IDs and add them up
-def part_1():
+def part1():
     # read input from file
     with open("input.txt", "r") as input:
         data = input.read().split(",")
@@ -75,8 +75,7 @@ def find_invalid_ids_2(start: int, end: int) -> list[int]:
     return invalid_ids
 
 
-
-def part_2():
+def part2():
     with open("input.txt", "r") as input:
         data = input.read().split(",")
         
@@ -95,5 +94,5 @@ def part_2():
 
 
 if __name__ == "__main__":
-    part_1()
-    part_2()
+    part1()
+    part2()

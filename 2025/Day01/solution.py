@@ -1,7 +1,5 @@
-from copy import copy
-
-def part_1():
-    with open("1.1_input.txt", "r") as input:
+def part1():
+    with open("input.txt", "r") as input:
         dial = 50 # current dial number
         counter = 0 # number of times dial hits zero
         lines = input.readlines()
@@ -22,11 +20,10 @@ def part_1():
                 counter += 1
                 
         print(f"Final counter part 1: {counter}")
-        
-        
-        
-def part_2():
-    with open("1.2_input.txt", "r") as input:
+
+
+def part2():
+    with open("input.txt", "r") as input:
         dial = 50 # current dial number
         counter = 0 # number of times dial hits zero
         lines = input.readlines()
@@ -42,7 +39,7 @@ def part_2():
                     counter += num_crosses # add to counter
                 dial %= 100 # modulo 100, because it only goes grom 0 to 99
             else:
-                old_dial = copy(dial)
+                old_dial = dial
                 dial -= number # left turn, so subtract
                 if (dial <= 0 and old_dial > 0): # dial crossed zero at least once
                     num_crosses = abs(dial // 100) # number of zero crosses
@@ -61,9 +58,8 @@ def part_2():
             # print("-----")
                 
         print(f"Final counter part 2: {counter}")
-        
-        
-        
+
+
 if __name__ == "__main__":
-    part_1()
-    part_2()
+    part1()
+    part2()
