@@ -14,45 +14,37 @@ def part1(data: str, num_connection_pairs: int):
         for i, line in enumerate(lines, start=1)
     }
     
-    print(vectors)
-    print("-------")
+    # print(vectors)
+    # print("-------")
 
-    while num_connection_pairs > 0:
-        vec_list = list(vectors.keys())
-        closest_distance = -1
-        closest_vectors = []
-        for i in range(len(vec_list)-1):
+    # Pre-compute all distances between vectors
+    vec_list = list(vectors.keys())
+    distances = dict()
+    # print(vec_list)
+    for i in range(len(vec_list)-1):
             for j in range(i+1, len(vec_list)):
-                v1 = vec_list[i]
-                v2 = vec_list[j]
-                
-                # If they are in the same circuit, skip
-                if vectors[v1] == vectors[v2]:
-                    continue
-
-                curr_distance = distance(v1, v2)
-                if curr_distance < closest_distance or closest_distance == -1:
-                    closest_distance = curr_distance
-                    closest_vectors = [vec_list[i], vec_list[j]]
-        
-        # Put the closest vectors in the same circuit
-        # The two vectors are guaranteed to be in different circuits
-        # because of the check above
-        vector_A = vectors[closest_vectors[0]]
-        vector_B = vectors[closest_vectors[1]]
-
-        # Find all keys that have the value vector_B and set them to vector_A
-        for key in vectors:
-            if vectors[key] == vector_B:
-                vectors[key] = vector_A
-                
-        # vectors[closest_vectors[1]] = vectors[closest_vectors[0]]
+                distances[(vec_list[i], vec_list[j])] = distance(vec_list[i], vec_list[j])
+    
+    # Sort distances from smallest to largest
+    distances = dict(sorted(distances.items(), key=lambda item: item[1]))
+    
+    while num_connection_pairs > 0:
+        for (vec1, vec2), _ in distances.items():
+            if vectors[vec1] != vectors[vec2]: # If not on same circuit
+                # Connect the two circuits by assigning all vectors with circuit ID of vec2 to vec1
+                old_circuit_id = vectors[vec2]
+                new_circuit_id = vectors[vec1]
+                for vec in vectors:
+                    if vectors[vec] == old_circuit_id:
+                        vectors[vec] = new_circuit_id
+                break  # Exit the for loop to re-evaluate distances
+            
         num_connection_pairs -= 1
         print(vectors)
         print("-------")
+    
+    # print(distances)
                 
-    # print(closest_distance)
-    # print(closest_vectors)
     circuit_count = len(set(vectors.values()))
 
     print(f"Part 1: {circuit_count}")
