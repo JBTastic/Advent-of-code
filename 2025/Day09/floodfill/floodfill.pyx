@@ -62,3 +62,43 @@ def flood_fill(
     free(qy)
 
     return visited
+
+
+# This cdef function is not exposed to Python, allowing for faster, C-level calls.
+cdef bint _is_inside(long px, long py, set perimeter_tiles, list segments):
+    if (px, py) in perimeter_tiles:
+        return True
+    
+    cdef int crossings = 0
+    cdef long x, y_min, y_max_exclusive
+    
+    for x, y_min, y_max_exclusive in segments:
+        if px < x:
+            if y_min <= py < y_max_exclusive:
+                crossings += 1
+    return crossings % 2 == 1
+
+
+# This def function is exposed to Python.
+def check_rectangle_perimeter(
+    long min_x, long min_y, long max_x, long max_y,
+    set perimeter_tiles,
+    list vertical_segments
+):
+    cdef long x, y
+
+    # Top and bottom edges
+    for x in range(min_x, max_x + 1):
+        if not _is_inside(x, min_y, perimeter_tiles, vertical_segments):
+            return False
+        if not _is_inside(x, max_y, perimeter_tiles, vertical_segments):
+            return False
+
+    # Left and right edges
+    for y in range(min_y + 1, max_y):
+        if not _is_inside(min_x, y, perimeter_tiles, vertical_segments):
+            return False
+        if not _is_inside(max_x, y, perimeter_tiles, vertical_segments):
+            return False
+            
+    return True

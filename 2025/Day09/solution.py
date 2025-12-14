@@ -21,8 +21,6 @@ def part2(data: str):
     lines = data.splitlines()
     red_tiles = [tuple(map(int, line.split(","))) for line in lines]
     
-    rightmost = max(red_tiles, key=lambda item: item[0])[0]
-
     # Pre-compute all possible areas spanned by the red tiles
     possible_areas = dict()
     for i in range(len(red_tiles) - 1):
@@ -85,62 +83,25 @@ def part2(data: str):
         # Add the last segment for this x
         vertical_segments.append((x, start_y, end_y + 1))
 
-    def is_inside(point: tuple[int, int], perimeter_tiles: set[tuple[int, int]], segments: list) -> bool:
-        """
-        Checks if a point is inside a polygon using the Ray Casting (even-odd) rule.
-        A point on the perimeter is considered inside for this problem's purpose.
-        """
-        px, py = point
-
-        if point in perimeter_tiles:
-            return True
-
-        crossings = 0
-        for x, y_min, y_max_exclusive in segments:
-            # Consider only vertical segments to the right of the point
-            if px < x:
-                # Check if the point's y-coordinate lies within the segment's y-range.
-                # The half-open interval [y_min, y_max_exclusive) is crucial for correctly
-                # handling cases where the ray passes through a vertex or is collinear
-                # with a horizontal edge.
-                if y_min <= py < y_max_exclusive:
-                    crossings += 1
-        
-        return crossings % 2 == 1
-
+    from floodfill import check_rectangle_perimeter
+    
     counter = 0
     print(counter)
     final_area = possible_areas.copy()
     for vecs in possible_areas.keys():
+        counter += 1
+        print(counter, end="\r")
+
         x1, y1 = vecs[0]
         x2, y2 = vecs[1]
         min_x, max_x = sorted((x1, x2))
         min_y, max_y = sorted((y1, y2))
         
-        # Instead of checking every point inside the area,
-        # we only check the perimeter points
-        perimeter_points = []
-        # Top and bottom edges
-        for x in range(min_x, max_x + 1):
-            perimeter_points.append((x, min_y))
-            perimeter_points.append((x, max_y))
-        # Left and right edges (excluding corners, which are already included)
-        for y in range(min_y + 1, max_y):
-            perimeter_points.append((min_x, y))
-            perimeter_points.append((max_x, y))
-        
-        counter += 1
-        print(counter)
-
-        is_fully_inside = True
-        for point in perimeter_points:
-            if not is_inside(point, red_and_green_tiles, vertical_segments):
-                is_fully_inside = False
-                break
-        
-        if not is_fully_inside:
+        # Call the new, fast Cython function to check the entire perimeter
+        if not check_rectangle_perimeter(min_x, min_y, max_x, max_y, red_and_green_tiles, vertical_segments):
             final_area.pop(vecs)
-            
+
+        # If the rectangle is valid, it's the largest one, so we can stop.
         if vecs in final_area:
             break
 
