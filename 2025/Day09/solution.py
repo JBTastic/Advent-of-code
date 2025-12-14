@@ -20,30 +20,17 @@ def part1(data: str):
 def part2(data: str):
     lines = data.splitlines()
     red_tiles = [tuple(map(int, line.split(","))) for line in lines]
-
-    bottom_right_corner = (
-        max(pos[0] for pos in red_tiles),
-        max(pos[1] for pos in red_tiles)
-    )
-    enlarged_bottom_right = (
-        bottom_right_corner[0] + 1,
-        bottom_right_corner[1] + 1
-    )
-
-    print(enlarged_bottom_right)
+    
+    rightmost = max(red_tiles, key=lambda item: item[0])[0]
 
     # Pre-compute all possible areas spanned by the red tiles
     possible_areas = dict()
     for i in range(len(red_tiles) - 1):
         for j in range(i + 1, len(red_tiles)):
-            possible_areas[(red_tiles[i], red_tiles[j])] = area(
-                red_tiles[i], red_tiles[j]
-            )
+            possible_areas[(red_tiles[i], red_tiles[j])] = area(red_tiles[i], red_tiles[j])
 
     # Sort areas from largest to smallest
-    possible_areas = dict(
-        sorted(possible_areas.items(), key=lambda item: item[1], reverse=True)
-    )
+    possible_areas = dict(sorted(possible_areas.items(), key=lambda item: item[1], reverse=True))
 
     # Find all the green tiles by connecting the red tiles
     green_tiles = []
@@ -67,83 +54,71 @@ def part2(data: str):
         for x in range(min(curr[0], next[0]) + 1, max(curr[0], next[0])):
             green_tiles.append((x, curr[1]))
 
-    # My input does not have (0,0) as red tile, if yours does, then sorry :(
-    if (0, 0) in red_tiles:
-        print("Sorry, your input has (0,0) as a red tile, which contradicts my assumptions.")
-        return
-
-    """
-    For reference:
-    # are red tiles
-    X are green tiles
-    . are free tiles
-
-    ..............
-    .......#XXX#..
-    .......X...X..
-    ..#XXXX#...X..
-    ..X........X..
-    ..#XXXXXX#.X..
-    .........X.X..
-    .........#X#..
-    ..............
-
-    We want to find all the outside free tiles (not red or green)
-    """
-
-
-    from floodfill import flood_fill
-    import array
-
     red_tiles = set(red_tiles)
     green_tiles = set(green_tiles)
     red_and_green_tiles = red_tiles.union(green_tiles)
+    
+    def raycast(start: tuple[int, int], red_and_green: set[tuple[int, int]]) -> bool:
+        """For one position, do a raycast to the right and count how many red/green tiles are crossed.
+        If an odd number is crossed, the position is inside the area (return True).
+        If even, the position is outside (return False).
 
-    max_x, max_y = enlarged_bottom_right
-    width = max_x + 1
-    height = max_y + 1
+        Args:
+            start (tuple[int, int]): starting position of the raycast
+            red_and_green (set[tuple[int, int]]): set of all red and green tiles
 
-    # Linearized blocked grid (C-friendly)
-    blocked = array.array("B", [0]) * (width * height)
+        Returns:
+            bool: False if outside the area, True if inside
+        """
+        
+        # Count how many red/green tiles are crossed
+        # When crossing multiple in a row, count as one
+        counter = 0
+        just_crossed = False
+        
+        if start in red_and_green:
+            return True
+        
+        for i in range(start[0]+1,rightmost+1):
+            if (i, start[1]) in red_and_green:
+                if not just_crossed:
+                    counter += 1
+                just_crossed = True
+            else:
+                just_crossed = False
+        
+        return counter % 2 == 1
 
-    def idx(x, y):
-        return y * width + x
 
-    for x, y in red_and_green_tiles:
-        blocked[idx(x, y)] = 1
-
-    # Call Cython flood fill
-    visited = flood_fill(blocked, width, height)
-
-    # Convert visited bytearray back to Python set
-    not_red_or_green_tiles = set()
-    for y in range(height):
-        for x in range(width):
-            if visited[idx(x, y)]:
-                not_red_or_green_tiles.add((x, y))
-
-
+    counter = 0
+    print(counter)
     final_area = possible_areas.copy()
-
     for vecs in possible_areas.keys():
         x1, y1 = vecs[0]
         x2, y2 = vecs[1]
         min_x, max_x = sorted((x1, x2))
         min_y, max_y = sorted((y1, y2))
+        print("stuff")
         positions_between_vectors = [
             (x, y)
             for x in range(min_x, max_x + 1)
             for y in range(min_y, max_y + 1)
         ]
 
+        counter += 1
+        print(counter, end="\r")
+        # Instead of checking if a position is outside/inside the area,
+        # we do a "raycast": for any position we go all the way to the right,
+        # and count how many red/green tiles we cross.
         for position in positions_between_vectors:
-            if position in not_red_or_green_tiles:
+            if not raycast(position, red_and_green_tiles):
                 final_area.pop(vecs)
                 break
+            
+        if vecs in final_area:
+            break
 
-    print(
-        f"Part 2:\nThe two positions: {list(final_area.keys())[:1]}\nThe largest area with only green and red tiles: {list(final_area.values())[:1]}"
-    )
+    print(f"Part 2:\nThe two positions: {list(final_area.keys())[:1]}\nThe largest area with only green and red tiles: {list(final_area.values())[:1]}")
 
 
 if __name__ == "__main__":
