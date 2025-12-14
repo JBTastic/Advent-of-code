@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools>=68", "wheel", "cython"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "advent-of-code-2025-day09"
+version = "0.1.0"
+description = "Solution code for Advent of Code 2025 Day 09"
+authors = [
+    { name = "Julian" }
+]
+requires-python = ">=3.10"

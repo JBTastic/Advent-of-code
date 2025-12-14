@@ -1,0 +1,6 @@
+Metadata-Version: 2.4
+Name: advent-of-code-2025-day09
+Version: 0.1.0
+Summary: Solution code for Advent of Code 2025 Day 09
+Author: Julian
+Requires-Python: >=3.10
