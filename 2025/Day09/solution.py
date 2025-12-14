@@ -24,6 +24,8 @@ def part2(data: str):
     bottom_right_corner = (max(pos[0] for pos in red_tiles), max(pos[1] for pos in red_tiles))
     enlarged_bottom_right = (bottom_right_corner[0] + 1, bottom_right_corner[1] + 1)
     
+    print(enlarged_bottom_right)
+    
     
     # Pre-compute all possible areas spanned by the red tiles
     possible_areas = dict()
@@ -61,27 +63,58 @@ def part2(data: str):
         print("Sorry, your input has (0,0) as a red tile, which contradicts my assumptions.")
         return
     
+    """
+    For reference:
+    # are red tiles
+    X are green tiles
+    . are free tiles
+    
+    ..............
+    .......#XXX#..
+    .......X...X..
+    ..#XXXX#...X..
+    ..X........X..
+    ..#XXXXXX#.X..
+    .........X.X..
+    .........#X#..
+    ..............
+    
+    We want to find all the outside free tiles (not red or green)
+    """
+    red_tiles = set(red_tiles)
+    green_tiles = set(green_tiles)
+    red_and_green_tiles = red_tiles.union(green_tiles)
     not_red_or_green_tiles = set()
-    from sys import setrecursionlimit
-    setrecursionlimit(10000)
-    def recursive_search(pos: tuple[int, int], visited: set[tuple[int, int]]):
-        if pos in visited:
-            return
-        visited.add(pos)
-        x, y = pos
+    queue = [(0,0)] # A queue for the flood fill, starting at (0,0) which is guaranteed to be outside
+    visited = set([(0,0)])
+
+    while queue:
+        print(f"Visited length: {len(visited)}", end="\r")
+        x, y = queue.pop(0)
+        not_red_or_green_tiles.add((x,y))
+
         # Check all 4 directions
-        directions = [(0,1), (1,0), (0,-1), (-1,0)]
-        for dx, dy in directions:
+        for dx, dy in [(0,1), (0,-1), (1,0), (-1,0)]:
             new_pos = (x+dx, y+dy)
-            if new_pos[0] < 0 or new_pos[1] < 0 or new_pos[0] > enlarged_bottom_right[0] or new_pos[1] > enlarged_bottom_right[1]:
+
+            if new_pos in visited:
                 continue
-            if new_pos in red_tiles or new_pos in green_tiles or new_pos in visited:
+            
+            # Check boundaries
+            if not (0 <= new_pos[0] <= enlarged_bottom_right[0] and 0 <= new_pos[1] <= enlarged_bottom_right[1]):
                 continue
-            recursive_search(new_pos, visited)
-    recursive_search((0,0), not_red_or_green_tiles)
+
+            # Don't cross the perimeter
+            if new_pos in red_and_green_tiles:
+                continue
+
+            visited.add(new_pos)
+            queue.append(new_pos)
     
     final_area = possible_areas.copy()
-        
+    
+    print("\n")
+    counter = 0
     for vecs in possible_areas.keys():
         x1, y1 = vecs[0]
         x2, y2 = vecs[1]
@@ -92,6 +125,8 @@ def part2(data: str):
         for x in range(min_x, max_x + 1)
         for y in range(min_y, max_y + 1)
         ]
+        print(counter)
+        counter += 1
 
         for position in positions_between_vectors:
             if position in not_red_or_green_tiles:
