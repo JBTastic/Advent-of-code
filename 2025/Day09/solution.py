@@ -57,38 +57,56 @@ def part2(data: str):
     red_tiles = set(red_tiles)
     green_tiles = set(green_tiles)
     red_and_green_tiles = red_tiles.union(green_tiles)
-    
-    def raycast(start: tuple[int, int], red_and_green: set[tuple[int, int]]) -> bool:
-        """For one position, do a raycast to the right and count how many red/green tiles are crossed.
-        If an odd number is crossed, the position is inside the area (return True).
-        If even, the position is outside (return False).
 
-        Args:
-            start (tuple[int, int]): starting position of the raycast
-            red_and_green (set[tuple[int, int]]): set of all red and green tiles
-
-        Returns:
-            bool: False if outside the area, True if inside
-        """
+    # Build a list of vertical segments from the perimeter tiles.
+    # This is done once for efficiency.
+    tiles_by_x = {}
+    for x, y in red_and_green_tiles:
+        if x not in tiles_by_x:
+            tiles_by_x[x] = []
+        tiles_by_x[x].append(y)
         
-        # Count how many red/green tiles are crossed
-        # When crossing multiple in a row, count as one
-        counter = 0
-        just_crossed = False
+    vertical_segments = []
+    for x, ys in tiles_by_x.items():
+        if not ys:
+            continue
+        ys.sort()
         
-        if start in red_and_green:
-            return True
-        
-        for i in range(start[0]+1,rightmost+1):
-            if (i, start[1]) in red_and_green:
-                if not just_crossed:
-                    counter += 1
-                just_crossed = True
+        start_y = ys[0]
+        end_y = ys[0]
+        for i in range(1, len(ys)):
+            if ys[i] == end_y + 1:
+                end_y = ys[i] # Extend segment
             else:
-                just_crossed = False
-        
-        return counter % 2 == 1
+                # End of a contiguous segment, add it and start a new one
+                # y_end is inclusive, so for a half-open interval check, we need y_end + 1
+                vertical_segments.append((x, start_y, end_y + 1))
+                start_y = end_y = ys[i]
+        # Add the last segment for this x
+        vertical_segments.append((x, start_y, end_y + 1))
 
+    def is_inside(point: tuple[int, int], perimeter_tiles: set[tuple[int, int]], segments: list) -> bool:
+        """
+        Checks if a point is inside a polygon using the Ray Casting (even-odd) rule.
+        A point on the perimeter is considered inside for this problem's purpose.
+        """
+        px, py = point
+
+        if point in perimeter_tiles:
+            return True
+
+        crossings = 0
+        for x, y_min, y_max_exclusive in segments:
+            # Consider only vertical segments to the right of the point
+            if px < x:
+                # Check if the point's y-coordinate lies within the segment's y-range.
+                # The half-open interval [y_min, y_max_exclusive) is crucial for correctly
+                # handling cases where the ray passes through a vertex or is collinear
+                # with a horizontal edge.
+                if y_min <= py < y_max_exclusive:
+                    crossings += 1
+        
+        return crossings % 2 == 1
 
     counter = 0
     print(counter)
@@ -98,27 +116,37 @@ def part2(data: str):
         x2, y2 = vecs[1]
         min_x, max_x = sorted((x1, x2))
         min_y, max_y = sorted((y1, y2))
-        print("stuff")
-        positions_between_vectors = [
-            (x, y)
-            for x in range(min_x, max_x + 1)
-            for y in range(min_y, max_y + 1)
-        ]
-
+        
+        # Instead of checking every point inside the area,
+        # we only check the perimeter points
+        perimeter_points = []
+        # Top and bottom edges
+        for x in range(min_x, max_x + 1):
+            perimeter_points.append((x, min_y))
+            perimeter_points.append((x, max_y))
+        # Left and right edges (excluding corners, which are already included)
+        for y in range(min_y + 1, max_y):
+            perimeter_points.append((min_x, y))
+            perimeter_points.append((max_x, y))
+        
         counter += 1
-        print(counter, end="\r")
-        # Instead of checking if a position is outside/inside the area,
-        # we do a "raycast": for any position we go all the way to the right,
-        # and count how many red/green tiles we cross.
-        for position in positions_between_vectors:
-            if not raycast(position, red_and_green_tiles):
-                final_area.pop(vecs)
+        print(counter)
+
+        is_fully_inside = True
+        for point in perimeter_points:
+            if not is_inside(point, red_and_green_tiles, vertical_segments):
+                is_fully_inside = False
                 break
+        
+        if not is_fully_inside:
+            final_area.pop(vecs)
             
         if vecs in final_area:
             break
 
-    print(f"Part 2:\nThe two positions: {list(final_area.keys())[:1]}\nThe largest area with only green and red tiles: {list(final_area.values())[:1]}")
+    print(
+        f"Part 2:\nThe two positions: {list(final_area.keys())[:1]}\nThe largest area with only green and red tiles: {list(final_area.values())[:1]}"
+    )
 
 
 if __name__ == "__main__":
