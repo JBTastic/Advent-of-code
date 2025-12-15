@@ -29,7 +29,9 @@ def part2(data: str):
 
     # Sort areas from largest to smallest
     possible_areas = dict(sorted(possible_areas.items(), key=lambda item: item[1], reverse=True))
-
+    
+    print(len(possible_areas))
+    
     # Find all the green tiles by connecting the red tiles
     green_tiles = []
     for i in range(len(red_tiles) - 1):
@@ -56,8 +58,7 @@ def part2(data: str):
     green_tiles = set(green_tiles)
     red_and_green_tiles = red_tiles.union(green_tiles)
 
-    # Build a list of vertical segments from the perimeter tiles.
-    # This is done once for efficiency.
+    # Build lists of vertical and horizontal segments for the scanline algorithms.
     tiles_by_x = {}
     for x, y in red_and_green_tiles:
         if x not in tiles_by_x:
@@ -66,22 +67,37 @@ def part2(data: str):
         
     vertical_segments = []
     for x, ys in tiles_by_x.items():
-        if not ys:
-            continue
+        if not ys: continue
         ys.sort()
-        
         start_y = ys[0]
         end_y = ys[0]
         for i in range(1, len(ys)):
             if ys[i] == end_y + 1:
-                end_y = ys[i] # Extend segment
+                end_y = ys[i]
             else:
-                # End of a contiguous segment, add it and start a new one
-                # y_end is inclusive, so for a half-open interval check, we need y_end + 1
                 vertical_segments.append((x, start_y, end_y + 1))
                 start_y = end_y = ys[i]
-        # Add the last segment for this x
         vertical_segments.append((x, start_y, end_y + 1))
+
+    tiles_by_y = {}
+    for x, y in red_and_green_tiles:
+        if y not in tiles_by_y:
+            tiles_by_y[y] = []
+        tiles_by_y[y].append(x)
+
+    horizontal_segments = []
+    for y, xs in tiles_by_y.items():
+        if not xs: continue
+        xs.sort()
+        start_x = xs[0]
+        end_x = xs[0]
+        for i in range(1, len(xs)):
+            if xs[i] == end_x + 1:
+                end_x = xs[i]
+            else:
+                horizontal_segments.append((y, start_x, end_x + 1))
+                start_x = end_x = xs[i]
+        horizontal_segments.append((y, start_x, end_x + 1))
 
     from floodfill import check_rectangle_perimeter
     
@@ -98,7 +114,7 @@ def part2(data: str):
         min_y, max_y = sorted((y1, y2))
         
         # Call the new, fast Cython function to check the entire perimeter
-        if not check_rectangle_perimeter(min_x, min_y, max_x, max_y, red_and_green_tiles, vertical_segments):
+        if not check_rectangle_perimeter(min_x, min_y, max_x, max_y, red_and_green_tiles, vertical_segments, horizontal_segments):
             final_area.pop(vecs)
 
         # If the rectangle is valid, it's the largest one, so we can stop.
